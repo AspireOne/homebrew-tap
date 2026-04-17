@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  test-formula:
+  test-formulas:
     runs-on: macos-latest
 
     steps:
@@ -24,11 +24,37 @@ jobs:
       - name: Tap local checkout
         run: brew tap AspireOne/tap "$GITHUB_WORKSPACE"
 
-      - name: Audit formula
-        run: brew audit --strict --online AspireOne/tap/codex-manage
+      - name: Audit formulas
+        run: |
+          set -euo pipefail
 
-      - name: Install formula from source
-        run: brew install --build-from-source AspireOne/tap/codex-manage
+          formulas=(Formula/*.rb)
+          if [ ! -e "${formulas[0]}" ]; then
+            echo "No formulas found in Formula/" >&2
+            exit 1
+          fi
 
-      - name: Test formula
-        run: brew test AspireOne/tap/codex-manage
+          for formula_path in "${formulas[@]}"; do
+            formula="$(basename "$formula_path" .rb)"
+            brew audit --strict --online "AspireOne/tap/$formula"
+          done
+
+      - name: Install formulas from source
+        run: |
+          set -euo pipefail
+
+          formulas=(Formula/*.rb)
+          for formula_path in "${formulas[@]}"; do
+            formula="$(basename "$formula_path" .rb)"
+            brew install --build-from-source "AspireOne/tap/$formula"
+          done
+
+      - name: Test formulas
+        run: |
+          set -euo pipefail
+
+          formulas=(Formula/*.rb)
+          for formula_path in "${formulas[@]}"; do
+            formula="$(basename "$formula_path" .rb)"
+            brew test "AspireOne/tap/$formula"
+          done
