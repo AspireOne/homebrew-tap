@@ -4,7 +4,6 @@ class CodexManage < Formula
   url "https://github.com/AspireOne/codex-auth-manager/archive/refs/tags/v0.1.1.tar.gz"
   sha256 "8110cafe7b1e50d2efc1ce1c7e68ec7f1abc1f673b63d34a8436940cca4d22f9"
   license "GPL-3.0-only"
-  version "0.1.1"
 
   depends_on "go" => :build
 
