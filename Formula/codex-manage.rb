@@ -5,6 +5,12 @@ class CodexManage < Formula
   sha256 "a0fa2db238674bdb92a54ea0eb933c119af56b4cc4fa4e37fc992ce3d344b080"
   license "GPL-3.0-only"
 
+  livecheck do
+    url :stable
+    regex(/^v?(\d+(?:\.\d+)+)$/i)
+    strategy :github_latest
+  end
+
   depends_on "go" => :build
 
   def install

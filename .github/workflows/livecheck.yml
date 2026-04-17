@@ -1,0 +1,56 @@
+name: Livecheck
+
+on:
+  schedule:
+    - cron: '37 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  livecheck:
+    name: Check for stale formulas
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out tap
+        uses: actions/checkout@v4
+
+      - name: Tap local checkout
+        run: brew tap AspireOne/tap "$GITHUB_WORKSPACE"
+
+      - name: Check upstream versions
+        run: |
+          set -euo pipefail
+
+          output_file="$(mktemp)"
+          brew livecheck --tap=AspireOne/tap --newer-only --json > "$output_file"
+          cat "$output_file"
+
+          ruby -rjson -e '
+            results = JSON.parse(File.read(ARGV.fetch(0)))
+            errors = results.select { |result| result["status"] == "error" }
+            outdated = results.select { |result| result.dig("version", "outdated") }
+
+            unless errors.empty?
+              warn "Livecheck could not check one or more formulas:"
+              errors.each do |result|
+                name = result["formula"] || result["cask"] || "unknown"
+                messages = Array(result["messages"]).join("; ")
+                warn "- #{name}: #{messages}"
+              end
+              exit 1
+            end
+
+            unless outdated.empty?
+              warn "One or more Homebrew formulas are stale:"
+              outdated.each do |result|
+                name = result["formula"] || result["cask"] || "unknown"
+                current = result.dig("version", "current")
+                latest = result.dig("version", "latest")
+                warn "- #{name}: #{current} -> #{latest}"
+              end
+              exit 1
+            end
+          ' "$output_file"
