@@ -1,8 +1,8 @@
 class CodexManage < Formula
   desc "Terminal UI for switching between Codex auth profiles"
   homepage "https://github.com/AspireOne/codex-auth-manager"
-  url "https://github.com/AspireOne/codex-auth-manager/archive/refs/tags/v0.1.1.tar.gz"
-  sha256 "8110cafe7b1e50d2efc1ce1c7e68ec7f1abc1f673b63d34a8436940cca4d22f9"
+  url "https://github.com/AspireOne/codex-auth-manager/archive/refs/tags/v0.1.2.tar.gz"
+  sha256 "a0fa2db238674bdb92a54ea0eb933c119af56b4cc4fa4e37fc992ce3d344b080"
   license "GPL-3.0-only"
 
   depends_on "go" => :build
@@ -13,6 +13,6 @@ class CodexManage < Formula
   end
 
   test do
-    assert_path_exists bin/"codex-manage"
+    assert_match version.to_s, shell_output("#{bin}/codex-manage --version")
   end
 end
