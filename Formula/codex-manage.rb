@@ -1,0 +1,18 @@
+class CodexManage < Formula
+  desc "Terminal UI for switching between Codex auth profiles"
+  homepage "https://github.com/AspireOne/codex-auth-manager"
+  url "https://github.com/AspireOne/codex-auth-manager/archive/refs/tags/v0.1.1.tar.gz"
+  sha256 "8110cafe7b1e50d2efc1ce1c7e68ec7f1abc1f673b63d34a8436940cca4d22f9"
+  version "0.1.1"
+
+  depends_on "go" => :build
+
+  def install
+    ldflags = "-s -w -X main.version=#{version}"
+    system "go", "build", *std_go_args(ldflags:), "./cmd/codex-manage"
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/codex-manage --version")
+  end
+end
