@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths:
+      - "Formula/**"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-formula:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out tap
+        uses: actions/checkout@v4
+
+      - name: Tap local checkout
+        run: brew tap AspireOne/tap "$GITHUB_WORKSPACE"
+
+      - name: Audit formula
+        run: brew audit --strict --online AspireOne/tap/codex-manage
+
+      - name: Install formula from source
+        run: brew install --build-from-source AspireOne/tap/codex-manage
+
+      - name: Test formula
+        run: brew test AspireOne/tap/codex-manage
