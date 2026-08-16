@@ -1,8 +1,8 @@
 class CodexManage < Formula
   desc "Terminal UI for switching between Codex auth profiles"
   homepage "https://github.com/AspireOne/codex-auth-manager"
-  url "https://github.com/AspireOne/codex-auth-manager/archive/refs/tags/v1.2.0.tar.gz"
-  sha256 "ccd50b3314a53491c834cc61c4f4fbc91fa5c59b2518838e8da563a86d1aa98a"
+  url "https://github.com/AspireOne/codex-auth-manager/archive/refs/tags/v1.3.0.tar.gz"
+  sha256 "953f855fbb1ceb9efde53ebfaca02ac694cc30570d2f2616554802714cb84f0c"
   license "GPL-3.0-only"
 
   depends_on "go" => :build
