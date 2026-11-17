@@ -4,10 +4,11 @@ Personal Homebrew tap for packages published by AspireOne.
 
 ## Usage
 
-Add the tap once:
+On macOS or Linux, add and trust the tap once:
 
 ```sh
 brew tap AspireOne/tap
+brew trust AspireOne/tap
 ```
 
 Then install any formula from this tap:
@@ -16,9 +17,10 @@ Then install any formula from this tap:
 brew install <formula>
 ```
 
-You can also install a formula directly without adding the tap first:
+You can also trust the tap and install a formula directly without adding the tap first:
 
 ```sh
+brew trust AspireOne/tap
 brew install AspireOne/tap/<formula>
 ```
 

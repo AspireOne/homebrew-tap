@@ -12,13 +12,16 @@ jobs:
   livecheck:
     name: Check for stale formulas
     runs-on: macos-latest
+    timeout-minutes: 10
 
     steps:
       - name: Check out tap
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Tap local checkout
-        run: brew tap AspireOne/tap "$GITHUB_WORKSPACE"
+      - name: Tap and trust local checkout
+        run: |
+          brew tap AspireOne/tap "$GITHUB_WORKSPACE"
+          brew trust AspireOne/tap
 
       - name: Check upstream versions
         run: |

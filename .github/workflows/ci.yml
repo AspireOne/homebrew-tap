@@ -15,14 +15,28 @@ permissions:
 
 jobs:
   test-formulas:
-    runs-on: macos-latest
+    name: Test formulas (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
 
     steps:
       - name: Check out tap
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Tap local checkout
-        run: brew tap AspireOne/tap "$GITHUB_WORKSPACE"
+      - name: Add Homebrew to PATH on Linux
+        if: runner.os == 'Linux'
+        run: |
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
+
+      - name: Tap and trust local checkout
+        run: |
+          brew tap AspireOne/tap "$GITHUB_WORKSPACE"
+          brew trust AspireOne/tap
 
       - name: Audit formulas
         run: |
