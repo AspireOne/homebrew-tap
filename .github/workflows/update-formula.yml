@@ -40,6 +40,17 @@ jobs:
         with:
           ref: main
 
+      - name: Reject outdated CI definitions
+        run: |
+          set -euo pipefail
+
+          # Relative reusable workflows come from the run's original commit.
+          git fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          if ! git diff --quiet "$GITHUB_SHA" HEAD -- .github/workflows/ci.yml; then
+            echo "::error::CI changed since this run was created. Send a fresh update request instead of rerunning this workflow."
+            exit 1
+          fi
+
       - name: Add Homebrew to PATH
         run: |
           echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
