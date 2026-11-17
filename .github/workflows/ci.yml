@@ -7,8 +7,19 @@ on:
       - main
     paths:
       - "Formula/**"
-      - ".github/workflows/ci.yml"
+      - ".github/workflows/**"
+      - "scripts/**"
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit to test
+        required: true
+        type: string
+      formula-artifact:
+        description: Candidate formula from the calling workflow
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -26,6 +37,15 @@ jobs:
     steps:
       - name: Check out tap
         uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Download candidate formula
+        if: inputs.formula-artifact != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.formula-artifact }}
+          path: Formula
 
       - name: Add Homebrew to PATH on Linux
         if: runner.os == 'Linux'
@@ -36,6 +56,8 @@ jobs:
       - name: Tap and trust local checkout
         run: |
           brew tap AspireOne/tap "$GITHUB_WORKSPACE"
+          # Local Git clones omit the uncommitted candidate downloaded above.
+          cp Formula/*.rb "$(brew --repository AspireOne/tap)/Formula/"
           brew trust AspireOne/tap
 
       - name: Audit formulas

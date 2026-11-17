@@ -1,0 +1,109 @@
+name: Update formula
+run-name: Update ${{ inputs.formula || github.event.client_payload.formula }} to ${{ inputs.version || github.event.client_payload.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      formula:
+        description: Existing formula name, for example codex-manage
+        required: true
+        type: string
+      version:
+        description: Published stable release tag, for example v1.9.1
+        required: true
+        type: string
+  repository_dispatch:
+    types: [update-formula]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-formula
+  queue: max
+
+env:
+  FORMULA: ${{ inputs.formula || github.event.client_payload.formula }}
+  VERSION: ${{ inputs.version || github.event.client_payload.version }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      ref: ${{ steps.update.outputs.ref }}
+      changed: ${{ steps.update.outputs.changed }}
+
+    steps:
+      - name: Check out tap
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Add Homebrew to PATH
+        run: |
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
+
+      - name: Prepare formula update
+        id: update
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+          TAP_NAME: AspireOne/tap
+        run: |
+          set -euo pipefail
+
+          scripts/update-formula.sh "$FORMULA" "$VERSION"
+          echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          if git diff --quiet -- "Formula/$FORMULA.rb"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff -- "Formula/$FORMULA.rb"
+          fi
+
+      - name: Upload candidate formula
+        uses: actions/upload-artifact@v7
+        with:
+          name: formula-update
+          path: Formula/${{ env.FORMULA }}.rb
+          if-no-files-found: error
+          retention-days: 7
+
+  validate:
+    needs: prepare
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.prepare.outputs.ref }}
+      formula-artifact: formula-update
+
+  publish:
+    needs: [prepare, validate]
+    if: needs.prepare.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out tested commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare.outputs.ref }}
+
+      - name: Download tested formula
+        uses: actions/download-artifact@v8
+        with:
+          name: formula-update
+          path: Formula
+
+      - name: Publish tested formula
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "Formula/$FORMULA.rb"
+          git commit -m "chore(formula): update $FORMULA to $VERSION"
+          git push origin HEAD:main
