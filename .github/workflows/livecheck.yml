@@ -11,12 +11,17 @@ permissions:
 jobs:
   livecheck:
     name: Check for stale formulas
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
       - name: Check out tap
         uses: actions/checkout@v7
+
+      - name: Add Homebrew to PATH
+        run: |
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"
 
       - name: Tap and trust local checkout
         run: |

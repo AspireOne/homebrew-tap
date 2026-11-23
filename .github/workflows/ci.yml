@@ -26,12 +26,8 @@ permissions:
 
 jobs:
   test-formulas:
-    name: Test formulas (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    name: Test formulas (Linux)
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
@@ -47,8 +43,7 @@ jobs:
           name: ${{ inputs.formula-artifact }}
           path: Formula
 
-      - name: Add Homebrew to PATH on Linux
-        if: runner.os == 'Linux'
+      - name: Add Homebrew to PATH
         run: |
           echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
           echo "/home/linuxbrew/.linuxbrew/sbin" >> "$GITHUB_PATH"

@@ -38,7 +38,7 @@ brew install AspireOne/tap/codex-manage
 
 This tap owns formula updates. Package release workflows send the existing formula name and a published stable release tag. The updater uses the formula's GitHub source URL to identify the upstream repository, then uses Homebrew's updater to change the version and checksum while preserving the rest of the formula.
 
-The candidate must pass the same audits, source builds, and tests as regular CI on macOS and Linux before it reaches `main`. Repeating the current version succeeds without a commit; older versions and prereleases are rejected. Concurrent update requests queue. If `main` changes during validation, publishing fails rather than overwriting that change; rerun the update.
+The candidate must pass the same audits, source builds, and tests as regular CI on Linux before it reaches `main`. Repeating the current version succeeds without a commit; older versions and prereleases are rejected. Concurrent update requests queue. If `main` changes during validation, publishing fails rather than overwriting that change; rerun the update.
 
 To request an update manually:
 
